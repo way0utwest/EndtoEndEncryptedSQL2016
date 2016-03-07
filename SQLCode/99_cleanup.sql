@@ -34,5 +34,11 @@ GO
 -- Remove DDM stuff
 GO
 -- Remoev Sym/Asym Keys
+DROP TABLE dbo.Employees;
 GO
-
+DROP SYMMETRIC KEY MySalaryProtector;
+GO
+DROP ASYMMETRIC KEY ReallyStrongSalaryKey
+GO
+DROP MASTER KEY;
+go
