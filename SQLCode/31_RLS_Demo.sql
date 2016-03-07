@@ -1,6 +1,6 @@
 /*
 End to End Encryption - RLS Demo
-RLS Setup and demo
+RLS Setup with existing users and demo of security for users and sysadmin.
 
 Steve Jones, copyright 2016
 
@@ -10,37 +10,247 @@ or redistributed by anyone without permission.
 You are free to use this code inside of your own organization.
 */
 
+USE EncryptionDemo
+GO
+-- Check the table. We should see 6 rows
+-- Note, I'm dbo
+SELECT
+        OrderID
+      , Orderdate
+      , CustomerID
+      , OrderTotal
+      , OrderComplete
+      , SalesPersonID
+	  , USER_NAME()
+    FROM
+        dbo.OrderHeader;
+GO
+
+
+
+
 /*
 The security predicate function is used to determine if a user can access particular rows of data.
 
 In this case, our predicate looks at the SalesPeople table and joins this with the Orders table to check access. 
 Salespeople can only see their own orders. Managers can see all orders.
+
+This is a normal function.
 */
-create function dbo.RLS_SalesPerson_OrderCheck (@salespersonid int)
-returns table
-with schemabinding
-as
-return select 1 as [RLS_SalesPerson_OrderCheck_Result]
-       from dbo.salespeople sp
-	   where (@salespersonid = sp.salespersonid or sp.IsManager = 1)
-	   and user_name() = sp.username
+CREATE FUNCTION dbo.RLS_SalesPerson_OrderCheck ( @salespersonid INT )
+RETURNS TABLE
+    WITH SCHEMABINDING
+AS
+RETURN
+    SELECT
+            1 AS [RLS_SalesPerson_OrderCheck_Result]
+        FROM
+            dbo.SalesPeople sp
+        WHERE
+            (
+              @salespersonid = sp.SalesPersonID
+              OR sp.IsManager = 1
+            )
+            AND USER_NAME() = sp.username;
+go
 
 
 /*
 The security policy maps the function to a particular table. 
+
+Note that the parameter used here must exist in our table (OrderHeader)
+CREATE SECURITY POLICY - https://msdn.microsoft.com/en-us/library/dn765135.aspx
+
 */
-create security policy dbo.RLS_SalesPeople_Orders_Policy
-add filter predicate dbo.RLS_SalesPerson_OrderCheck(salespersonid)
-on dbo.OrderHeader
+CREATE SECURITY POLICY dbo.RLS_SalesPeople_Orders_Policy
+  ADD FILTER PREDICATE dbo.RLS_SalesPerson_OrderCheck(salespersonid)
+  ON dbo.OrderHeader;
 
 
-setuser 'sjones'
+
+
+-- Now our function is enabled. Let us test how a user sees this table.
+EXECUTE AS USER = 'sjones';
 go
-select * from OrderHeader
+SELECT
+        o.OrderID
+      , o.Orderdate
+      , o.CustomerID
+      , o.OrderTotal
+      , o.OrderComplete
+      , o.SalesPersonID
+      , sp.SalesFirstName
+      , sp.SalesLastName
+      , sp.username
+      , sp.IsManager
+    FROM
+        dbo.OrderHeader o
+    INNER JOIN dbo.SalesPeople sp
+    ON  sp.SalesPersonID = o.SalesPersonID;
 go
-setuser
+REVERT
 go
-select * from OrderHeader
+-- Note, I only see 3 orders. These are the orders associated with sjones (SalespersonID = 2)
 
 
-select IS_SRVROLEMEMBER('sysadmin')
+
+-- But there are more rows. Let's view them
+SELECT
+        o.OrderID
+      , o.Orderdate
+      , o.CustomerID
+      , o.OrderTotal
+      , o.OrderComplete
+      , o.SalesPersonID
+      , sp.SalesFirstName
+      , sp.SalesLastName
+      , sp.username
+      , sp.IsManager
+    FROM
+        dbo.OrderHeader o
+    INNER JOIN dbo.SalesPeople sp
+    ON  sp.SalesPersonID = o.SalesPersonID;
+GO
+
+
+
+
+-- What happened?
+-- Let's check the manager
+EXECUTE AS USER = 'kjohnson'
+GO
+SELECT
+        o.OrderID
+      , o.Orderdate
+      , o.CustomerID
+      , o.OrderTotal
+      , o.OrderComplete
+      , o.SalesPersonID
+      , sp.SalesFirstName
+      , sp.SalesLastName
+      , sp.username
+      , sp.IsManager
+    FROM
+        dbo.OrderHeader o
+    INNER JOIN dbo.SalesPeople sp
+    ON  sp.SalesPersonID = o.SalesPersonID;
+GO
+REVERT
+GO
+
+
+-- The manager sees all rows, however DBO sees none.
+SELECT * FROM dbo.OrderHeader;
+
+-- Why?
+-- RLS is independent of SQL Server security (GRANT SELECT). Sysadmins are bound by the same
+-- security policy.
+
+
+
+
+-- Let's change oure function
+ALTER FUNCTION dbo.RLS_SalesPerson_OrderCheck ( @salespersonid INT )
+RETURNS TABLE
+    WITH SCHEMABINDING
+AS
+RETURN
+    SELECT
+            1 AS [RLS_SalesPerson_OrderCheck_Result]
+        FROM
+            dbo.SalesPeople sp
+        WHERE
+            ((
+              @salespersonid = sp.SalesPersonID
+              OR sp.IsManager = 1
+            )
+            AND USER_NAME() = sp.username
+			)
+			OR (IS_SRVROLEMEMBER(N'sysadmin') = 1
+			);
+go
+-- Error, We have a security policy in effect.
+-- Let's disable this.
+-- ALTER SECURTIY POLICY - https://msdn.microsoft.com/en-us/library/dn765135.aspx
+ALTER SECURITY POLICY dbo.RLS_SalesPeople_Orders_Policy 
+  WITH (STATE = OFF);
+GO
+-- Try again
+ALTER FUNCTION dbo.RLS_SalesPerson_OrderCheck ( @salespersonid INT )
+RETURNS TABLE
+    WITH SCHEMABINDING
+AS
+RETURN
+    SELECT
+            1 AS [RLS_SalesPerson_OrderCheck_Result]
+        FROM
+            dbo.SalesPeople sp
+        WHERE
+            ((
+              @salespersonid = sp.SalesPersonID
+              OR sp.IsManager = 1
+            )
+            AND USER_NAME() = sp.username
+			)
+			OR (IS_SRVROLEMEMBER(N'sysadmin') = 1
+			);
+go
+-- still fails
+
+
+-- We need to remove the predicate
+ALTER SECURITY POLICY dbo.RLS_SalesPeople_Orders_Policy 
+  DROP FILTER PREDICATE ON dbo.OrderHeader;
+GO
+
+ALTER FUNCTION dbo.RLS_SalesPerson_OrderCheck ( @salespersonid INT )
+RETURNS TABLE
+    WITH SCHEMABINDING
+AS
+RETURN
+    SELECT
+            1 AS [RLS_SalesPerson_OrderCheck_Result]
+        FROM
+            dbo.SalesPeople sp
+        WHERE
+            ((
+              @salespersonid = sp.SalesPersonID
+              OR sp.IsManager = 1
+            )
+            AND USER_NAME() = sp.username
+			)
+			OR (IS_SRVROLEMEMBER(N'sysadmin') = 1
+			);
+go
+-- still fails
+
+
+-- add the predicate and enable
+ALTER SECURITY POLICY dbo.RLS_SalesPeople_Orders_Policy 
+  ADD FILTER PREDICATE dbo.RLS_SalesPerson_OrderCheck(salespersonid)
+   ON dbo.orderheader;
+GO
+ALTER SECURITY POLICY dbo.RLS_SalesPeople_Orders_Policy 
+  WITH (STATE = ON)
+GO
+
+
+-- Now, Can I see rows as dbo?
+SELECT
+        o.OrderID
+      , o.Orderdate
+      , o.CustomerID
+      , o.OrderTotal
+      , o.OrderComplete
+      , o.SalesPersonID
+      , sp.SalesFirstName
+      , sp.SalesLastName
+      , sp.username
+      , sp.IsManager
+    FROM
+        dbo.OrderHeader o
+    INNER JOIN dbo.SalesPeople sp
+    ON  sp.SalesPersonID = o.SalesPersonID;
+GO
+-- Yes
+
