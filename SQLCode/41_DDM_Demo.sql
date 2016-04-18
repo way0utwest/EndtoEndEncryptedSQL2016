@@ -29,17 +29,44 @@ GO
 SELECT * FROM dbo.OrderDetail;
 
 
+-- Looks the same
+
+
+
+
+
+
+
 -- requery with user 'sjones'
 EXECUTE AS USER = 'sjones';
 GO
 SELECT * FROM dbo.OrderDetail;
 GO
 REVERT;
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- Let's change the mask
 ALTER TABLE dbo.OrderDetail
  ALTER COLUMN ProductName ADD MASKED WITH (FUNCTION ='partial(5, "xxxxxx", 0)')
 
+
+
+
+
+
+
+
 -- requery with user 'sjones'
 EXECUTE AS USER = 'sjones';
 GO
@@ -47,9 +74,40 @@ SELECT * FROM dbo.OrderDetail;
 GO
 REVERT;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- we can use random values. Let's mask the unit price with a random number
 ALTER TABLE dbo.OrderDetail
  ALTER COLUMN UnitPrice ADD MASKED WITH (FUNCTION = 'random(.1, .9)')
+go
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- requery with user 'bsmith'
 EXECUTE AS USER = 'bsmith';
@@ -59,7 +117,30 @@ GO
 REVERT;
 
 
+
+
+
+
+
+
 -- what about our manager? They need to see data.
+EXECUTE AS USER = 'kjohnson';
+GO
+SELECT * FROM dbo.OrderDetail;
+GO
+REVERT;
+
+-- masked
+
+
+
+
+
+
+
+
+
+-- Let's change rights
 GRANT UNMASK TO kjohnson;
 
 
@@ -69,6 +150,17 @@ GO
 SELECT * FROM dbo.OrderDetail;
 GO
 REVERT;
+
+
+
+
+
+
+
+
+
+
+
 
 
 -- reset permissions
@@ -81,6 +173,17 @@ GO
 REVERT;
 GO
 
+
+
+
+
+
+
+
+
+
+
+
 -- Add unmask to a role
 CREATE ROLE SalesManager;
 GO
@@ -88,6 +191,13 @@ ALTER ROLE SalesManager ADD MEMBER kjohnson;
 GO
 GRANT UNMASK TO SalesManager;
 GO
+
+
+
+
+
+
+
 
 -- requery
 EXECUTE AS USER = 'kjohnson';

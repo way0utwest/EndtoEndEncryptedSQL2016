@@ -47,6 +47,8 @@ UPDATE dbo.OrderHeader
  SET SalesPersonID = 2
  WHERE OrderID = 1001;
 GO
+REVERT
+go
 SELECT * FROM dbo.OrderHeader;
 GO
 
@@ -58,6 +60,8 @@ GO
 
 
 -- Can I add rows?
+EXECUTE AS USER = 'sjones';
+GO
 INSERT dbo.OrderHeader VALUES ( GETDATE(), 1, -2000, 1, 2)
 GO
 SELECT * FROM dbo.OrderHeader;
@@ -70,10 +74,16 @@ GO
 SELECT * FROM dbo.OrderHeader;
 GO
 -- Can I add rows elsewhere? Yes.
-
+REVERT
+GO
+SELECT * FROM dbo.OrderHeader;
+GO
+ 
 
 
 -- The same thing for updates.
+EXECUTE AS USER = 'sjones';
+GO
 UPDATE dbo.OrderHeader
  SET SalesPersonID = 1
  WHERE OrderID = 1007

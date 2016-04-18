@@ -33,6 +33,22 @@ GRANT SELECT ON dbo.Emails TO SalesUsers;
 GRANT SELECT ON dbo.Emails TO SalesManager;
 GO
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- requery with user 'sjones'
 EXECUTE AS USER = 'sjones';
 GO
@@ -40,6 +56,15 @@ SELECT * FROM dbo.Emails;
 GO
 REVERT;
 GO
+
+
+
+
+
+
+
+
+
 -- check the manager
 EXECUTE AS USER = 'kjohnson';
 GO
@@ -47,3 +72,5 @@ SELECT * FROM dbo.Emails;
 GO
 REVERT;
 GO
+
+

@@ -222,7 +222,6 @@ RETURN
 			OR (IS_SRVROLEMEMBER(N'sysadmin') = 1
 			);
 go
--- still fails
 
 
 -- add the predicate and enable
@@ -254,3 +253,4 @@ SELECT
 GO
 -- Yes
 
+-- End demo

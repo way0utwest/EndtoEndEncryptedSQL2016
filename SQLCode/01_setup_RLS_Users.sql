@@ -9,6 +9,8 @@ your environment. Please test this on your own systems. This code may not be rep
 or redistributed by anyone without permission.
 You are free to use this code inside of your own organization.
 */
+USE EncryptionDemo
+go
 
 
 /*

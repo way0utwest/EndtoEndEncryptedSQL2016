@@ -21,6 +21,19 @@ DROP TABLE #mytable
 GO
 REVERT;
 GO
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- check the manager
 EXECUTE AS USER = 'kjohnson';
 GO
@@ -34,6 +47,18 @@ GO
 REVERT;
 GO
 
+
+
+
+
+
+
+
+
+
+
+
+
 -- Can we get around this?
 GRANT ALTER ON schema::dbo TO sjones
 GRANT CREATE TABLE TO sjones
@@ -44,13 +69,15 @@ SELECT *
  INTO dbo.EmailExport
  FROM dbo.Emails;
 GO
-GRANT SELECT ON emailexport TO sjones
+--GRANT SELECT ON emailexport TO sjones
 GO
 SELECT *
  FROM EmailExport
 GO
 REVERT;
 GO
+
+
 
 DROP TABLE dbo.EmailExport;
 GO

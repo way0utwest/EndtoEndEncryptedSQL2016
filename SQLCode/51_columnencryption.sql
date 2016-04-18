@@ -43,12 +43,24 @@ GO
 
 
 
+
+
+
+
 -- don't want to disclose salary
 -- let's encrypt it
 -- alter the table
 ALTER TABLE Employees
 ADD EncryptedSalary VARBINARY(MAX);
 GO
+
+
+
+
+
+
+
+
 
 
 -- Before we create our encryption keys, we need a master key.
@@ -93,9 +105,17 @@ ENCRYPTION BY ASYMMETRIC KEY ReallyStrongSalaryKey;
 GO
 
 
+
+
+
+
 -- open the key
 OPEN SYMMETRIC KEY MySalaryProtector
  DECRYPTION BY ASYMMETRIC KEY ReallyStrongSalaryKey;
+
+
+
+
 
 
 
@@ -105,6 +125,13 @@ OPEN SYMMETRIC KEY MySalaryProtector
  ;
 
 
+
+
+
+
+
+
+
 -- encrypt the data
 UPDATE
         dbo.Employees
@@ -112,10 +139,13 @@ UPDATE
         EncryptedSalary = ENCRYPTBYKEY(KEY_GUID('MySalaryProtector'),
                                        CAST(salary AS NVARCHAR));
  GO
- -- remove the old data
 
 
- -- check the data
+
+
+
+
+-- check the data
 SELECT
         id
       , firstname
@@ -143,6 +173,12 @@ SELECT
 GO
 
 
+
+
+
+
+
+
 -- decrypt the data, with the casting
 SELECT
         id
@@ -156,6 +192,9 @@ SELECT
     FROM
         dbo.Employees;
 GO
+
+
+
 
 
 -- no need to open the key
@@ -191,7 +230,13 @@ go
 
 
 
+
+
 -- We have an attack without decryption.
+
+
+
+
 
 
 
@@ -211,6 +256,9 @@ update Employees
  set rowguidID = NewID();
 go
 
+
+
+
 -- check
 select 
   id
@@ -221,6 +269,10 @@ select
 , rowguidID
  from Employees;
 go
+
+
+
+
 
 
 -- Now re-encrypt, with an authenicator
@@ -248,6 +300,12 @@ SELECT
 GO
 
 
+
+
+
+
+
+
 -- attack again
 UPDATE
         e
@@ -259,6 +317,14 @@ UPDATE
     WHERE
         e.id = 2
         AND b.id = 1;
+
+
+
+
+
+
+
+
 
 
 -- doesn't work
