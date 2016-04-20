@@ -50,7 +50,16 @@ GO
 
 
 
+
+
+
 -- examine with a hex editor
+
+
+
+
+
+
 
 
 
@@ -59,8 +68,8 @@ GO
 USE [master]
 GO
 CREATE DATABASE [TDE_Primer] ON 
-( FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL13.SQL2016\MSSQL\DATA\TDE_Primer.mdf' ),
-( FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL13.SQL2016\MSSQL\DATA\TDE_Primer_log.ldf' )
+( FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL12.SQL2014\MSSQL\DATA\TDE_Primer.mdf' ),
+( FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL12.SQL2014\MSSQL\DATA\TDE_Primer_log.ldf' )
  FOR ATTACH
 GO
 
@@ -94,6 +103,10 @@ ENCRYPTION BY SERVER CERTIFICATE TDEPRimer_CertSecurity;
 GO
 
 
+
+
+
+
 -- backup TDE cert
 USE master
 ;
@@ -121,8 +134,7 @@ FROM
 GO
 
 -- enable encryption
-USE TDE_Primer
-;
+USE TDE_Primer;
 GO
 ALTER DATABASE TDE_Primer
   SET ENCRYPTION ON;
@@ -169,8 +181,8 @@ GO
 USE [master]
 GO
 CREATE DATABASE [TDE_Primer] ON 
-( FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQL\DATA\TDE_Primer.mdf' ),
-( FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQL\DATA\TDE_Primer_log.ldf' )
+( FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL12.SQL2014\MSSQL\DATA\TDE_Primer.mdf' ),
+( FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL12.SQL2014\MSSQL\DATA\TDE_Primer_log.ldf' )
  FOR ATTACH
 GO
 BACKUP DATABASE TDE_Primer

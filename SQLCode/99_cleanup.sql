@@ -30,7 +30,19 @@ GO
 DELETE dbo.OrderHeader
  WHERE OrderID > 1006;
 GO
+-- remove rights
+REVOKE UNMASK FROM kjohnson
  
+GO
+ALTER ROLE SalesManager DROP MEMBER kjohnson
+GO
+DROP ROLE SalesManager
+
+GO
+ALTER TABLE OrderDetail ALTER COLUMN ProductName DROP MASKED;
+ALTER TABLE OrderDetail ALTER COLUMN UnitPrice DROP MASKED;
+GO
+
 -- Remove DDM stuff
 GO
 -- Remoev Sym/Asym Keys
