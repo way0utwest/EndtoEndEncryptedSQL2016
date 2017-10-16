@@ -59,6 +59,12 @@ GO
 -- I cannot update rows that are filtered. These don't exist as far as I'm concerned.
 
 
+
+
+
+
+
+
 -- Can I add rows?
 -- Let's add one for me. SalesPersonID = 2
 EXECUTE AS USER = 'sjones';
@@ -69,6 +75,11 @@ INSERT dbo.OrderHeader
 GO
 SELECT * FROM dbo.OrderHeader;
 GO
+
+
+
+
+
 -- Sure, I have permission to do so. 
 
 -- Hmmm, can I cause trouble?
@@ -77,11 +88,19 @@ INSERT dbo.OrderHeader VALUES ( GETDATE(), 1, -50000, 1, 1)
 GO
 SELECT * FROM dbo.OrderHeader;
 GO
+
+
+
+
 -- Can I add rows elsewhere? Yes.
 REVERT
 GO
 SELECT * FROM dbo.OrderHeader;
 GO
+-- sjones is salesperson 2
+
+
+
  
 
 

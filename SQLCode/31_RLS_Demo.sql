@@ -121,6 +121,7 @@ go
 
 
 -- But there are more rows. Let's view them
+-- execute this as dbo
 SELECT
         o.OrderID
       , o.Orderdate
@@ -169,13 +170,32 @@ GO
 SELECT * FROM dbo.OrderHeader;
 
 -- Why?
+
+
+
+
+
+
+
+
 -- RLS is independent of SQL Server security (GRANT SELECT). Sysadmins are bound by the same
 -- security policy.
 
 
 
 
--- Let's change oure function
+
+
+
+
+
+
+
+
+
+
+-- Let's change our function
+-- Add an AND to the WHERE.
 ALTER FUNCTION dbo.RLS_SalesPerson_OrderCheck ( @salespersonid INT )
 RETURNS TABLE
     WITH SCHEMABINDING
@@ -281,6 +301,7 @@ SELECT
       , sp.SalesLastName
       , sp.username
       , sp.IsManager
+	  , USER_NAME()
     FROM
         dbo.OrderHeader o
     INNER JOIN dbo.SalesPeople sp
