@@ -294,7 +294,7 @@ SELECT
                                    CAST(rowguidid AS NVARCHAR(100))) AS NVARCHAR(200))
       , rowguidID
       , firstname
-      , lastname
+      , EncryptedSalary
     FROM
         dbo.Employees;
 GO

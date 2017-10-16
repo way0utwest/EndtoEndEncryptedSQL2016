@@ -128,7 +128,8 @@ GO
 -- Let's try
 ALTER SECURITY POLICY dbo.RLS_SalesPeople_Orders_Policy
  ADD BLOCK PREDICATE dbo.RLS_SalesPerson_OrderCheck(salespersonid)
-  ON dbo.OrderHeader;
+  ON dbo.OrderHeader
+  ;
 GO
 
 -- Now, let's see. sjones = SalesPersonID 2

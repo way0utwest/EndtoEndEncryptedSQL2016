@@ -80,7 +80,6 @@ go
 SELECT
         o.OrderID
       , o.CustomerID
-      , o.OrderTotal
       , o.SalesPersonID
       , sp.SalesFirstName
       , sp.SalesLastName
@@ -138,7 +137,7 @@ SELECT
     INNER JOIN dbo.SalesPeople sp
     ON  sp.SalesPersonID = o.SalesPersonID;
 GO
-
+SELECT USER_NAME()
 
 
 
@@ -178,7 +177,8 @@ SELECT * FROM dbo.OrderHeader;
 
 
 
--- RLS is independent of SQL Server security (GRANT SELECT). Sysadmins are bound by the same
+-- RLS is independent of SQL Server security (GRANT SELECT). 
+-- Sysadmins are bound by the same
 -- security policy.
 
 
