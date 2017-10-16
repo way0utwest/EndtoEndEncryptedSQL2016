@@ -39,8 +39,8 @@ go
 -- Note, I only see 3 orders. These are the orders associated with sjones (SalespersonID = 2)
 
 
--- what about ORderID 1001?
--- can I change it?
+-- What about OrderID 1001? This is a bsmith (salespersonid =1) order
+-- can I change it? Let's try
 EXECUTE AS USER = 'sjones';
 GO
 UPDATE dbo.OrderHeader
@@ -60,15 +60,19 @@ GO
 
 
 -- Can I add rows?
+-- Let's add one for me. SalesPersonID = 2
 EXECUTE AS USER = 'sjones';
 GO
-INSERT dbo.OrderHeader VALUES ( GETDATE(), 1, -2000, 1, 2)
+INSERT dbo.OrderHeader
+    (Orderdate, CustomerID, OrderTotal, OrderComplete, SalesPersonID    )
+ VALUES ( GETDATE(), 1, -2000, 1, 2)
 GO
 SELECT * FROM dbo.OrderHeader;
 GO
 -- Sure, I have permission to do so. 
 
--- hmmm, can I cause trouble?
+-- Hmmm, can I cause trouble?
+-- Can I add an order for bsmith, a negative order
 INSERT dbo.OrderHeader VALUES ( GETDATE(), 1, -50000, 1, 1)
 GO
 SELECT * FROM dbo.OrderHeader;
@@ -82,6 +86,7 @@ GO
 
 
 -- The same thing for updates.
+-- Let's move the negative order to bsmith
 EXECUTE AS USER = 'sjones';
 GO
 UPDATE dbo.OrderHeader
@@ -98,7 +103,7 @@ GO
 SELECT * FROM dbo.OrderHeader;
 GO
 -- Note that I've "moved" a bad order to another salesperson, while adding another.
-
+-- This is bad
 
 -- Can I stop this?
 -- Let's try
@@ -110,12 +115,13 @@ GO
 -- Now, let's see. sjones = SalesPersonID 2
 EXECUTE AS USER = 'sjones';
 GO
-INSERT dbo.OrderHeader VALUES ( GETDATE(), 1, -50000, 1, 1)
+INSERT dbo.OrderHeader VALUES ( GETDATE(), 1, -75000, 1, 1)
 GO
 
 
 
 -- An error, but now I know RLS is in play.
+-- This is some security leakage
 REVERT
 GO
 -- Check, no OrderId = 1009

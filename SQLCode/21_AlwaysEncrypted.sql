@@ -79,6 +79,10 @@ SELECT *
   (CustomerID, CustomerName, TaxID, CreditLimit, Active)
   VALUES (11, 'Stevie', '42423432', 200, 1);
 GO
+SELECT *
+ FROM customers
+
+ GO
 
 
 -- Run app

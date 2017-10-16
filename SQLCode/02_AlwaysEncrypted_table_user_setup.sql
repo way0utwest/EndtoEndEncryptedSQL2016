@@ -117,7 +117,12 @@ AS
   END
  GO
 
- 
+CREATE USER aeuser FOR LOGIN AEUser
+GO
+GRANT SELECT, INSERT, UPDATE, DELETE on Customers TO aeuser
+GRANT EXECUTE ON  Customers_SelectAll TO aeuser
+GRANT EXECUTE ON  Customers_Insert TO aeuser
+GRANT EXECUTE ON  Customers_SelectOne TO aeuser
 
 /*
 -- Reset

@@ -30,12 +30,15 @@ GO
 
 
 /*
-The security predicate function is used to determine if a user can access particular rows of data.
+The security predicate function is used to determine if a 
+user can access particular rows of data.
 
-In this case, our predicate looks at the SalesPeople table and joins this with the Orders table to check access. 
+In this case, our predicate looks at the SalesPeople table and 
+joins this with the Orders table to check access. 
 Salespeople can only see their own orders. Managers can see all orders.
 
 This is a normal function.
+select * from salespeople
 */
 CREATE FUNCTION dbo.RLS_SalesPerson_OrderCheck ( @salespersonid INT )
 RETURNS TABLE
@@ -66,18 +69,18 @@ CREATE SECURITY POLICY dbo.RLS_SalesPeople_Orders_Policy
   ADD FILTER PREDICATE dbo.RLS_SalesPerson_OrderCheck(salespersonid)
   ON dbo.OrderHeader;
 
-
+-- SELECT top 10 * FROM dbo.OrderHeader AS oh
+ 
 
 
 -- Now our function is enabled. Let us test how a user sees this table.
+-- SalesPersonID = 2
 EXECUTE AS USER = 'sjones';
 go
 SELECT
         o.OrderID
-      , o.Orderdate
       , o.CustomerID
       , o.OrderTotal
-      , o.OrderComplete
       , o.SalesPersonID
       , sp.SalesFirstName
       , sp.SalesLastName
@@ -91,6 +94,29 @@ go
 REVERT
 go
 -- Note, I only see 3 orders. These are the orders associated with sjones (SalespersonID = 2)
+
+
+
+
+-- Let's check bsmith
+EXECUTE AS USER = 'bsmith';
+go
+SELECT
+        o.OrderID
+      , o.CustomerID
+      , o.OrderTotal
+      , o.SalesPersonID
+      , sp.SalesFirstName
+      , sp.SalesLastName
+      , sp.username
+      , sp.IsManager
+    FROM
+        dbo.OrderHeader o
+    INNER JOIN dbo.SalesPeople sp
+    ON  sp.SalesPersonID = o.SalesPersonID;
+go
+REVERT
+go
 
 
 
@@ -170,31 +196,40 @@ RETURN
 			);
 go
 -- Error, We have a security policy in effect.
+
+
+/*
+Older demo
+Try this if you like, but this will fail. The policy can't just
+be disabled.
+*/
+
 -- Let's disable this.
 -- ALTER SECURTIY POLICY - https://msdn.microsoft.com/en-us/library/dn765135.aspx
-ALTER SECURITY POLICY dbo.RLS_SalesPeople_Orders_Policy 
-  WITH (STATE = OFF);
-GO
--- Try again
-ALTER FUNCTION dbo.RLS_SalesPerson_OrderCheck ( @salespersonid INT )
-RETURNS TABLE
-    WITH SCHEMABINDING
-AS
-RETURN
-    SELECT
-            1 AS [RLS_SalesPerson_OrderCheck_Result]
-        FROM
-            dbo.SalesPeople sp
-        WHERE
-            ((
-              @salespersonid = sp.SalesPersonID
-              OR sp.IsManager = 1
-            )
-            AND USER_NAME() = sp.username
-			)
-			OR (IS_SRVROLEMEMBER(N'sysadmin') = 1
-			);
-go
+--ALTER SECURITY POLICY dbo.RLS_SalesPeople_Orders_Policy 
+--  WITH (STATE = OFF);
+--GO
+---- Try again
+--ALTER FUNCTION dbo.RLS_SalesPerson_OrderCheck ( @salespersonid INT )
+--RETURNS TABLE
+--    WITH SCHEMABINDING
+--AS
+--RETURN
+--    SELECT
+--            1 AS [RLS_SalesPerson_OrderCheck_Result]
+--        FROM
+--            dbo.SalesPeople sp
+--        WHERE
+--            ((
+--              @salespersonid = sp.SalesPersonID
+--              OR sp.IsManager = 1
+--            )
+--            AND USER_NAME() = sp.username
+--			)
+--			OR (IS_SRVROLEMEMBER(N'sysadmin') = 1
+--			);
+--go
+
 -- still fails
 
 
